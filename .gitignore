@@ -1,0 +1,19 @@
+#This file tell git what oto ignore
+
+# Python related
+__pycache__/
+*.pyc
+
+# Environments, for security
+.env
+.venv
+env/
+venv/
+conda/
+
+# VS Code related
+.vscode/
+
+# OS, unneeded stuff
+.DS_Store
+Thumbs.db
