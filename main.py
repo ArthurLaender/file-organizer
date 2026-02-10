@@ -2,6 +2,7 @@
 import argparse
 from pathlib import Path
 from collections import defaultdict
+from datetime import datetime
 
 from organizer.scanner import scan_folder
 from organizer.sorter import decide_folder
@@ -74,16 +75,36 @@ def main():
             move_file(file, destination_folder)
             moved_files += 1
 
-    # ---- Final Summary Report ----
-    print("\nSummary")
-    print("-" * 30)
-    print(f"Files processed: {total_files}")
-    print(f"Files moved:     {moved_files}")
-    print(f"Files skipped:   {skipped_files}")
+# ---- Build Summary Text ----
+    summary_lines = []
+    summary_lines.append("Summary")
+    summary_lines.append("-" * 30)
+    summary_lines.append(f"Files processed: {total_files}")
+    summary_lines.append(f"Files moved:     {moved_files}")
+    summary_lines.append(f"Files skipped:   {skipped_files}")
+    summary_lines.append("")
+    summary_lines.append("By category:")
 
-    print("\nBy category:")
     for category, count in category_count.items():
-        print(f"  {category}: {count}")
+        summary_lines.append(f"  {category}: {count}")
+
+    summary_text = "\n".join(summary_lines)
+
+    # ---- Print Summary ----
+    print("\n" + summary_text)
+
+    # ---- Save Summary to Log File ----
+    logs_folder = base_path / "logs"
+    logs_folder.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_file = logs_folder / f"organizer_{timestamp}.log"
+
+    with log_file.open("w", encoding="utf-8") as f:
+        f.write(summary_text)
+
+    print(f"\nSummary saved to: {log_file}")
+
 
 if __name__ == "__main__":
     main()
