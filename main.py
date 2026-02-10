@@ -1,6 +1,7 @@
 # main.py
 import argparse
 from pathlib import Path
+from collections import defaultdict
 
 from organizer.scanner import scan_folder
 from organizer.sorter import decide_folder
@@ -45,10 +46,24 @@ def main():
     # Scan the folder and get a list of files
     files = scan_folder(base_path)
 
+    #For the summary
+    total_files = 0
+    moved_files = 0
+    skipped_files = 0
+    category_count = defaultdict(int)
+
     # Process each file individually
     for file in files:
+        total_files += 1
         # Decide which category folder the file belongs to
         folder_name = decide_folder(file)
+
+        # If decide_folder returns None (for some reason), skip the file
+        if folder_name is None:
+            skipped_files += 1
+            continue
+        
+        category_count[folder_name] += 1
         # Build the destination folder path
         destination_folder = base_path / folder_name
 
@@ -56,10 +71,19 @@ def main():
         if args.dry_run:
             print(f"[DRY RUN] {file.name} -> {destination_folder}")
         else:
-            new_path = move_file(file, destination_folder)
-            print(f"Moved {file.name} -> {new_path}")
+            move_file(file, destination_folder)
+            moved_files += 1
 
+    # ---- Final Summary Report ----
+    print("\nSummary")
+    print("-" * 30)
+    print(f"Files processed: {total_files}")
+    print(f"Files moved:     {moved_files}")
+    print(f"Files skipped:   {skipped_files}")
 
+    print("\nBy category:")
+    for category, count in category_count.items():
+        print(f"  {category}: {count}")
 
 if __name__ == "__main__":
     main()
